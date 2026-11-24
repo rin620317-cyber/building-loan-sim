@@ -197,7 +197,7 @@ details.more .ctl{margin-top:12px}
  <p class="msg">動かすと、上の結論とすべてのグラフがその場で変わります。<span class="who u" style="font-size:11px;font-weight:600;border-radius:5px;padding:0 5px">聞いた</span>はお聞きした数字、<span class="who k" style="font-size:11px;font-weight:600;border-radius:5px;padding:0 5px">仮</span>は一般的な想定です。</p>
  <div class="card">
   <div class="scen" role="group" aria-label="想定の切り替え">
-   <button type="button" data-s="std" class="on">標準</button><button type="button" data-s="hard">厳しめ</button><button type="button" data-s="easy">甘め</button><button type="button" data-s="custom" disabled style="opacity:.6">自分で変えた</button>
+   <button type="button" data-s="std" class="on">標準</button><button type="button" data-s="hard">厳しめ</button><button type="button" data-s="pet">ペット可</button><button type="button" data-s="easy">甘め</button><button type="button" data-s="custom" disabled style="opacity:.6">自分で変えた</button>
   </div>
   <div class="ctl" id="ctl-main"></div>
   <details class="more"><summary>細かい条件（家賃・経費・修繕・繰上返済）</summary><div class="ctl" id="ctl-more"></div></details>
@@ -275,7 +275,8 @@ details.more .ctl{margin-top:12px}
   <div class="card">
    <p class="ct">この建物で気をつけたいこと</p>
    <ul class="pts">
-    <li><b>外壁・屋上の防水</b>：RCは12〜15年ごとが目安。築43年なら少なくとも2回目以降。足場代がかさむ。</li>
+    <li><b>外壁・屋上の防水</b>：RCは12〜15年ごとが目安だが、<b>築43年で一度も大規模修繕をしていない</b>。内覧で雨漏り跡と、外壁の窓枠からの斜めのひびを確認。足場代がかさむ。</li>
+    <li><b>結露・断熱</b>：3階は結露がひどく床が浮いている。1983年のRCは断熱が薄いことが多く、3階のリノベで内断熱を入れる費用を見込む。</li>
     <li><b>給排水管・電気・受水槽</b>：築40年を超えると古い鉄の配管が傷みやすい。2階の工事で一緒に替えると割安なことも。</li>
     <li><b>2階の水回りの新設</b>：排水管をどこに通すかで費用が大きく変わる。床を上げる・1階の天井を通すなど、見積もりで必ず確認。</li>
     <li><b>アスベスト</b>：1983年築は使われている可能性がある。工事の前に調べることが法律で決まっている（調査費がかかる）。</li>
@@ -304,10 +305,10 @@ details.more .ctl{margin-top:12px}
   <div class="card">
    <p class="ct" style="margin-bottom:6px">建物・入居のこと</p>
    <ul class="chk">
-    <li><span class="ic b">6</span><span>前回の外壁・屋上の修繕はいつか<small>修繕履歴。なければ3年目に700万円で置いています</small></span></li>
+    <li><span class="ic b">6</span><span>前回の外壁・屋上の修繕はいつか<small>これまで修繕なしと聞いたので、1年目に1,000万円で置いています。劣化診断で金額を確かめる</small></span></li>
     <li><span class="ic x">7</span><span>確認済証・検査済証があるか<small>新耐震の確認と、銀行の評価に関わる</small></span></li>
     <li><span class="ic x">8</span><span>1階テナント（ペット関連の教室）との賃貸契約の中身<small>契約期間・更新・解約の予告期間・敷金。1階は家賃の6割を占める</small></span></li>
-    <li><span class="ic x">9</span><span>2階の家賃の相場<small>近くの30㎡前後の部屋。仮に月6.0万円・空室10%</small></span></li>
+    <li><span class="ic x">9</span><span>2階の家賃の相場<small>近くの30㎡前後の部屋は5万円台。仮に月5.5万円（ペット可なら6.5万円）・空室10%</small></span></li>
     <li><span class="ic n">10</span><span>建物の調査（劣化診断）<small>配管・防水・コンクリートの状態。銀行の融資期間の判断にも使われる</small></span></li>
    </ul>
   </div>
@@ -320,13 +321,14 @@ details.more .ctl{margin-top:12px}
 /* ===== 前提（単位：万円。who: u＝聞いた / k＝仮） ===== */
 const BUILT=1983, NOW=2026, AGE0=NOW-BUILT, LEGAL=47;
 const STD={price:5500,down:0,misc:400,renoLoan:1,term:20,rate:2.5,rateUp:0,rateUpY:5,
- rent1:23.5,vac1:5,dec1:0,rooms:3,rentRoom:6.0,vac2:10,dec2:1,renoMonths:6,perRoom:350,
- tax:45,ins:12,util:1.5,mgmt:5,small:30,
- bigCost:700,bigY:3,bigEvery:15,eqCost:300,eqY:10,
- extra:0,prepay:1,buffer:300};
+ rent1:23.5,vac1:5,dec1:0,rooms:3,rentRoom:5.5,vac2:10,dec2:1,renoMonths:6,perRoom:350,
+ tax:45,ins:12,util:1.5,mgmt:0,small:30,
+ bigCost:1000,bigY:1,bigEvery:15,eqCost:300,eqY:2,direct:150,
+ extra:7,prepay:1,buffer:300};
 const SCEN={std:{},
- hard:{rate:2.5,rateUp:1,rentRoom:5.5,vac2:20,vac1:10,dec2:1.5,perRoom:420,bigCost:900,eqCost:400},
- easy:{rate:2.0,rentRoom:6.5,vac2:5,vac1:0,dec2:0.5,perRoom:300,bigCost:600}};
+ pet:{rentRoom:6.5},
+ hard:{rate:3.0,rateUp:1,rentRoom:5.0,vac2:20,vac1:10,dec2:1.5,perRoom:450,bigCost:1300,eqCost:400},
+ easy:{rate:2.0,rentRoom:6.5,vac2:5,vac1:0,dec2:0.5,perRoom:300,bigCost:800}};
 // [キー, 名前, 最小, 最大, 刻み, 単位, 聞いた/仮, ひとこと, 置き場所]
 const CTL=[
  ["@","借り方","main"],
@@ -335,9 +337,9 @@ const CTL=[
  ["down","頭金（物件代に入れる自己資金）",0,2000,50,"万円","u","諸費用（約400万円）は別に自己資金","main"],
  ["renoLoan","2階の工事費",0,1,1,"","u","","main",["自己資金で払う","借入に含める"]],
  ["@","家賃","main"],
- ["rentRoom","2階の家賃（1室あたり）",4,8,0.1,"万円","k","30㎡前後の部屋。共益費こみ","main"],
+ ["rentRoom","2階の家賃（1室あたり）",4,8,0.1,"万円","k","近くの30㎡前後は5万円台。フルリノベで5.5万、ペット可なら6.5万も","main"],
  ["vac2","2階の空室率",0,30,1,"%","k","10%＝1年のうち約1.2か月空く","main"],
- ["extra","家賃以外から足すお金（月）",0,40,1,"万円","k","本人の収入や、3階に移って浮く住居費・事務所代など","main"],
+ ["extra","家賃以外から足すお金（月）",0,40,1,"万円","u","初期値7万＝いまの住まいを手放すと浮く住居費の目安","main"],
  ["@","2階の部屋","more"],
  ["rooms","2階の部屋数",3,4,1,"室","u","","more",["3室","4室"]],
  ["perRoom","2階の工事費（1室あたり）",200,600,10,"万円","k","キッチン・浴室・トイレ・排水・内装","more"],
@@ -350,13 +352,14 @@ const CTL=[
  ["tax","固定資産税・都市計画税（年）",20,100,1,"万円","k","課税明細書で確認","more"],
  ["ins","火災・地震保険（年）",5,30,1,"万円","k","","more"],
  ["util","共用部の電気・水道・清掃（月）",0,5,0.5,"万円","k","","more"],
- ["mgmt","2階の管理委託料",0,10,1,"%","k","家賃の5%前後。自分で管理すれば0","more"],
+ ["mgmt","2階の管理委託料",0,10,1,"%","u","自主管理の予定なので0。委託すると家賃の5%前後","more"],
  ["small","小さな修繕・入退去の費用（年）",0,80,5,"万円","k","給湯器・エアコンの交換、退去後の補修など","more"],
  ["@","大きな修繕","more"],
  ["bigCost","外壁・屋上防水（1回）",300,1500,50,"万円","k","足場こみ","more"],
- ["bigY","その1回目（購入から何年目）",1,15,1,"年目","k","前回の修繕がいつかで決まる","more"],
+ ["bigY","その1回目（購入から何年目）",1,15,1,"年目","u","これまで大規模修繕なし。雨漏り跡・外壁のひびあり","more"],
  ["bigEvery","そのあとの間隔",10,20,1,"年ごと","k","","more"],
- ["eqCost","給排水管・電気・受水槽の更新",0,1000,50,"万円","k","","more"],
+ ["eqCost","給排水管・電気・受水槽の更新",0,1000,50,"万円","k","古い給水管・排水管・電気の更新。直結給水にすればポンプの更新は不要","more"],
+ ["direct","直結給水への切替工事（1年目）",0,500,10,"万円","k","1階の給水ポンプをなくす工事。道路側の引込管を太くする工事が要ることも。地元の水道局に要確認","more"],
  ["eqY","その時期（購入から何年目）",1,20,1,"年目","k","","more"],
  ["@","金利の上昇と繰上返済","more"],
  ["rateUp","6年目からの金利の上がり幅",0,2,0.25,"%","k","変動金利の場合の備え","more"],
@@ -381,6 +384,7 @@ function monthFlow(p,m){ // m=1.. 購入からの月
 function eventsIn(p,y){const e=[];
  if(y>=p.bigY&&(y-p.bigY)%p.bigEvery===0)e.push(["外壁・屋上防水",p.bigCost]);
  if(y===p.eqY&&p.eqCost>0)e.push(["給排水管・電気・受水槽",p.eqCost]);
+ if(y===1&&p.direct>0)e.push(["直結給水への切替工事",p.direct]);
  return e}
 function sim(p,o={}){
  const prepay=o.prepay??!!p.prepay, extra=o.extra??p.extra;
@@ -540,7 +544,7 @@ function render(){
  const base=sim(P,{prepay:false}),pre=sim(P,{prepay:!!P.prepay}),t=typical(P),T=P.term;
  const sens=chSens();
  const isStd=sameAs(STD)&&scen==="std";
- const who=isStd?"標準ケースでは":(scen==="hard"&&sameAs({...STD,...SCEN.hard})?"厳しめの想定では":(scen==="easy"&&sameAs({...STD,...SCEN.easy})?"甘めの想定では":"いまの条件では"));
+ const who=isStd?"標準ケースでは":(scen==="hard"&&sameAs({...STD,...SCEN.hard})?"厳しめの想定では":(scen==="easy"&&sameAs({...STD,...SCEN.easy})?"甘めの想定では":(scen==="pet"&&sameAs({...STD,...SCEN.pet})?"ペット可にした場合":"いまの条件では")));
  const fromDone=pre.payoff-P.renoMonths;
  $("#h1").innerHTML=`${who}、2階の完成から<span class="big">約${ym(fromDone)}</span>で完済${pre.payoff<T*12-1?"":`（借入期間${T}年どおり）`}`;
  const own=P.misc+P.down+(P.renoLoan?0:renoCost(P));
@@ -640,5 +644,6 @@ function startMotion(){
 buildCtl();sync();render();startMotion();
 let rt,lastW=$(".wrap").clientWidth;new ResizeObserver(()=>{const w=$(".wrap").clientWidth;if(w===lastW)return;lastW=w;clearTimeout(rt);rt=setTimeout(redraw,120)}).observe($(".wrap"));
 </script>
+
 </body>
 </html>
