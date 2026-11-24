@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>RCビル 返済試算</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* レイアウト：結論（見出し＋数字カード）→ 条件のスライダー → 根拠のグラフ → 建物の注意点 → 確かめること */
+:root{color-scheme:light;
+--bg:#f4f5f9;--panel:#fff;--panel-2:#f8f9fc;--line:rgba(20,24,60,.08);--line-2:rgba(20,24,60,.14);
+--ink:#0f1226;--ink-2:#4c5070;--ink-3:#868aa6;
+--brand:#4f5bd5;--brand-2:#8b5cf6;--brand-s:rgba(79,91,213,.09);
+--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--neutral:#b9bccb;--neutral-2:#d9dbe5;
+--good:#0a8a0a;--bad:#d03b3b;--warn:#b86e00;--warn-s:rgba(250,178,25,.16);--bad-s:rgba(208,59,59,.08);--good-s:rgba(12,163,12,.09);
+--grid:rgba(20,24,60,.07);
+--shadow:0 1px 2px rgba(15,18,50,.04),0 8px 24px -12px rgba(30,34,100,.16)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+--bg:#0b0c15;--panel:#14152a;--panel-2:#191a33;--line:rgba(160,170,255,.09);--line-2:rgba(160,170,255,.16);
+--ink:#eef0ff;--ink-2:#a9acd0;--ink-3:#7377a0;
+--brand:#7b88ff;--brand-2:#a78bfa;--brand-s:rgba(123,136,255,.14);
+--s1:#3987e5;--s2:#d95926;--s3:#199e70;--neutral:#4b4e6b;--neutral-2:#33354f;
+--good:#2fc72f;--bad:#ff6b6b;--warn:#fab219;--warn-s:rgba(250,178,25,.13);--bad-s:rgba(255,107,107,.12);--good-s:rgba(47,199,47,.12);
+--grid:rgba(160,170,255,.08);--shadow:0 12px 30px -16px rgba(0,0,0,.75)}}
+:root[data-theme="dark"]{color-scheme:dark;
+--bg:#0b0c15;--panel:#14152a;--panel-2:#191a33;--line:rgba(160,170,255,.09);--line-2:rgba(160,170,255,.16);
+--ink:#eef0ff;--ink-2:#a9acd0;--ink-3:#7377a0;
+--brand:#7b88ff;--brand-2:#a78bfa;--brand-s:rgba(123,136,255,.14);
+--s1:#3987e5;--s2:#d95926;--s3:#199e70;--neutral:#4b4e6b;--neutral-2:#33354f;
+--good:#2fc72f;--bad:#ff6b6b;--warn:#fab219;--warn-s:rgba(250,178,25,.13);--bad-s:rgba(255,107,107,.12);--good-s:rgba(47,199,47,.12);
+--grid:rgba(160,170,255,.08);--shadow:0 12px 30px -16px rgba(0,0,0,.75)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:96px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,"Noto Sans JP","Hiragino Sans","Yu Gothic UI",sans-serif;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;transition:background-color .35s,color .35s}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1120px;margin:0 auto;padding-block:9px 7px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;align-items:center;gap:12px}
+.logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--brand-2));flex:none}
+.top b{font-size:14px;white-space:nowrap}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-left:auto;min-width:0}
+.chips::-webkit-scrollbar{display:none}
+.chips a{flex:none;text-decoration:none;color:var(--ink-2);font-size:12.5px;padding:5px 11px;border-radius:999px;border:1px solid var(--line-2);background:var(--panel)}
+.chips a:hover,.chips a:focus-visible{color:var(--brand);border-color:var(--brand)}
+.live{max-width:1120px;margin:0 auto;padding-block:0 8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;gap:6px 14px;flex-wrap:wrap;font-size:12px;color:var(--ink-2)}
+.live b{color:var(--ink);font-weight:700}
+.live .neg{color:var(--bad)}
+.wrap{max-width:1120px;margin:0 auto;padding-block:18px 70px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.sample{background:var(--warn-s);color:var(--warn);border-radius:10px;padding:8px 12px;font-size:12.5px;margin-bottom:16px}
+.sample b{font-weight:700}
+.hero{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;align-items:stretch}
+.eyebrow{font-size:12px;letter-spacing:.06em;color:var(--brand);font-weight:700}
+h1{font-size:27px;line-height:1.3;margin:4px 0 8px;letter-spacing:-.01em;text-wrap:balance}
+h1 .big{color:var(--brand)}
+.lede{color:var(--ink-2);margin:0 0 14px;font-size:13.5px}
+.status{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600;background:var(--warn-s);color:var(--warn)}
+.status.okk{background:var(--good-s);color:var(--good)}
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow);min-width:0;transition:background-color .35s,border-color .35s}
+.takeaways{background:linear-gradient(140deg,var(--brand-s),transparent 70%),var(--panel)}
+.takeaways h3{margin:0 0 8px;font-size:13px;color:var(--ink-2);font-weight:600}
+.tk{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.tk:first-of-type{border-top:0}
+.tk i{font-style:normal;width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-size:12px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--brand),var(--brand-2))}
+.tk p{margin:0;font-size:13.5px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+.kpi{padding:14px 14px 12px}
+.k-lbl{color:var(--ink-2);font-size:12px}
+.k-val{font-size:24px;font-weight:700;margin-top:2px;letter-spacing:-.02em}
+.k-val small{font-size:13px;font-weight:600;color:var(--ink-2);margin-left:2px}
+.k-val.neg{color:var(--bad)}.k-val.pos{color:var(--good)}
+.k-sub{font-size:11px;color:var(--ink-3);line-height:1.45;margin-top:2px}
+.sec{margin-top:34px}
+.sec-h{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+.sec-h .n{font-size:12px;font-weight:700;color:var(--brand);letter-spacing:.06em}
+.sec-h h2{font-size:19px;margin:0;letter-spacing:-.01em}
+.msg{margin:0 0 12px;color:var(--ink-2);font-size:13.5px}
+.msg b{color:var(--ink)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g32{display:grid;grid-template-columns:1.5fr 1fr;gap:14px}
+.ct{font-size:13.5px;font-weight:700;margin:0}
+.cs{font-size:11.5px;color:var(--ink-3);margin:2px 0 8px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--ink-2);margin:0 0 4px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.sw.ln{height:3px;width:14px;border-radius:2px}
+.chart{width:100%;position:relative}
+.chart svg{display:block;width:100%;overflow:visible}
+.src{font-size:11px;color:var(--ink-3);margin-top:8px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.tv{background:none;border:0;color:var(--brand);font:inherit;font-size:11.5px;cursor:pointer;padding:0}
+.tblwrap{display:none;margin-top:8px;overflow-x:auto;max-height:420px;overflow-y:auto}
+.tblwrap.on{display:block}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--panel)}
+th{color:var(--ink-3);font-weight:500;font-size:11.5px}
+td.l,th.l{text-align:left;white-space:normal}
+.neg{color:var(--bad)}
+/* 条件のスライダー */
+.scen{display:flex;gap:4px;padding:4px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line);width:max-content;max-width:100%;overflow-x:auto;margin:0 0 14px}
+.scen button{border:0;background:none;color:var(--ink-2);font:inherit;font-size:13px;font-weight:600;padding:6px 14px;border-radius:9px;cursor:pointer;white-space:nowrap}
+.scen button.on{background:var(--panel);color:var(--ink);box-shadow:var(--shadow)}
+.scen button:focus-visible,.tv:focus-visible,.theme:focus-visible,.tg button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.ctl{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 22px}
+.sl{min-width:0}
+.sl label{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12.5px;color:var(--ink-2)}
+.sl label b{color:var(--ink);font-size:14.5px;font-weight:700;white-space:nowrap}
+.sl input[type=range]{width:100%;accent-color:var(--brand);margin:4px 0 0;height:26px;cursor:pointer}
+.sl small{display:block;font-size:11px;color:var(--ink-3);line-height:1.45}
+.sl .who{font-size:10.5px;font-weight:600;border-radius:5px;padding:0 5px;margin-left:4px;vertical-align:1px}
+.who.u{background:var(--good-s);color:var(--good)}.who.k{background:var(--warn-s);color:var(--warn)}
+.tg{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.tg button{border:1px solid var(--line-2);background:var(--panel-2);color:var(--ink-2);font:inherit;font-size:12.5px;padding:5px 12px;border-radius:9px;cursor:pointer}
+.tg button.on{border-color:var(--brand);color:var(--brand);background:var(--brand-s);font-weight:700}
+.grp{font-size:12px;font-weight:700;color:var(--ink-3);letter-spacing:.04em;grid-column:1/-1;margin-top:6px;padding-top:10px;border-top:1px solid var(--line)}
+.grp:first-child{margin-top:0;padding-top:0;border-top:0}
+details.more{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+details.more summary{cursor:pointer;color:var(--brand);font-weight:600;font-size:13px;list-style:none}
+details.more summary::-webkit-details-marker{display:none}
+details.more summary::before{content:"＋ "}
+details.more[open] summary::before{content:"− "}
+details.more .ctl{margin-top:12px}
+/* リスト */
+.chk{list-style:none;margin:0;padding:0}
+.chk li{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:start;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.chk li small{display:block;color:var(--ink-3);font-size:11.5px}
+.ic{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;font-size:12px;font-weight:700;margin-top:1px}
+.ic.x{background:var(--warn-s);color:var(--warn)}.ic.b{background:var(--bad-s);color:var(--bad)}.ic.n{background:var(--brand-s);color:var(--brand)}
+.pts{margin:0;padding-left:18px;font-size:13px;color:var(--ink-2)}
+.pts li{margin:6px 0}.pts b{color:var(--ink)}
+.fine{font-size:11.5px;color:var(--ink-3);margin-top:18px;line-height:1.7}
+.theme{flex:none;width:34px;height:34px;border-radius:10px;border:1px solid var(--line-2);background:var(--panel);color:var(--ink-2);display:grid;place-items:center;cursor:pointer;padding:0}
+.theme:hover{color:var(--brand);border-color:var(--brand)}
+.theme svg{width:17px;height:17px}
+/* 動き */
+.anim .gb{transform-box:fill-box;transform-origin:50% 100%}
+.anim.play .gb{animation:grow .8s cubic-bezier(.2,.8,.2,1) var(--d,0s) both}
+.anim.play .dl{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.2s cubic-bezier(.4,0,.2,1) var(--d,.2s) forwards}
+.anim.play .fi{opacity:0;animation:fade .5s ease var(--d,.9s) forwards}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.rv{transform:translateY(14px);opacity:.01;transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .7s cubic-bezier(.2,.8,.2,1)}
+.rv.in{opacity:1;transform:none}
+.status .dot{animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 currentColor}50%{box-shadow:0 0 0 4px transparent}}
+@media (prefers-reduced-motion:reduce){.status .dot{animation:none}}
+#tip{position:fixed;z-index:50;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:7px 10px;border-radius:9px;box-shadow:var(--shadow);opacity:0;transition:opacity .12s;max-width:250px;line-height:1.5}
+.hit{fill:transparent}
+@media (max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.hero,.g2,.g32{grid-template-columns:1fr}.ctl{grid-template-columns:1fr 1fr}}
+@media (max-width:600px){
+ h1{font-size:22px}.kpis{gap:10px}.k-val{font-size:20px}
+ .card{padding:14px;border-radius:14px}.top b{display:none}
+ .sec{margin-top:28px}.sec-h h2{font-size:17px}.ctl{grid-template-columns:1fr}.chips a{padding:4px 9px}}
+</style>
+</head>
+<body>
+
+<div class="top">
+ <div class="top-in">
+  <div class="logo" aria-hidden="true"></div>
+  <b>RCビル 返済試算</b>
+  <nav class="chips" aria-label="章へ移動">
+   <a href="#s1">条件</a><a href="#s2">残高</a><a href="#s3">お金</a><a href="#s4">足すと</a><a href="#s5">築年数</a><a href="#s6">修繕</a><a href="#s7">確かめる</a>
+  </nav>
+  <button class="theme" id="theme" type="button" aria-label="ライト／ダークを切り替え" title="ライト／ダークを切り替え"></button>
+ </div>
+ <div class="live num" id="live" aria-live="polite"></div>
+</div>
+
+<div class="wrap">
+<div class="sample"><b>目安の試算です。</b>価格・1階の家賃・広さはお聞きした数字、ほかの家賃・経費・工事費・修繕費は<b>仮の数字（一般的な想定）</b>です。融資が通るかや、買うべきかを示すものではありません。所得税などの税金は入れていません。</div>
+
+<div class="hero">
+ <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;gap:12px">
+  <div>
+   <div class="eyebrow">中古ビル · RC造3階建て · 1983年築（新耐震）</div>
+   <h1 id="h1"></h1>
+   <p class="lede" id="lede"></p>
+  </div>
+  <div><span class="status" id="status"><span class="dot"></span><span></span></span></div>
+ </div>
+ <div class="card takeaways">
+  <h3>要点</h3>
+  <div class="tk"><i>1</i><p id="tk1"></p></div>
+  <div class="tk"><i>2</i><p id="tk2"></p></div>
+  <div class="tk"><i>3</i><p id="tk3"></p></div>
+ </div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+
+<!-- 01 条件 -->
+<section class="sec" id="s1">
+ <div class="sec-h"><span class="n">01</span><h2>条件を変える</h2></div>
+ <p class="msg">動かすと、上の結論とすべてのグラフがその場で変わります。<span class="who u" style="font-size:11px;font-weight:600;border-radius:5px;padding:0 5px">聞いた</span>はお聞きした数字、<span class="who k" style="font-size:11px;font-weight:600;border-radius:5px;padding:0 5px">仮</span>は一般的な想定です。</p>
+ <div class="card">
+  <div class="scen" role="group" aria-label="想定の切り替え">
+   <button type="button" data-s="std" class="on">標準</button><button type="button" data-s="hard">厳しめ</button><button type="button" data-s="easy">甘め</button><button type="button" data-s="custom" disabled style="opacity:.6">自分で変えた</button>
+  </div>
+  <div class="ctl" id="ctl-main"></div>
+  <details class="more"><summary>細かい条件（家賃・経費・修繕・繰上返済）</summary><div class="ctl" id="ctl-more"></div></details>
+ </div>
+</section>
+
+<!-- 02 残高 -->
+<section class="sec" id="s2">
+ <div class="sec-h"><span class="n">02</span><h2>ローン残高の減り方</h2></div>
+ <p class="msg" id="m2"></p>
+ <div class="card">
+  <p class="ct">ローン残高の推移</p><p class="cs">単位：万円。横は購入からの年数。繰上返済は、1年ごとに手元のお金が「手元に残す額」を超えた分を返す想定（返済額は変えず、期間を短くする）</p>
+  <div class="legend"><span><i class="sw ln" style="background:var(--neutral)"></i>予定どおり返す</span><span><i class="sw ln" style="background:var(--s1)"></i>余りを繰上返済に回す</span></div>
+  <div class="chart anim" id="c-bal"></div>
+  <div class="src"><span>元利均等返済。金利は途中で変わらない前提（「細かい条件」で上げられます）</span><button class="tv" type="button" data-t="bal">表で見る</button></div>
+  <div class="tblwrap" id="tv-bal"></div>
+ </div>
+</section>
+
+<!-- 03 お金 -->
+<section class="sec" id="s3">
+ <div class="sec-h"><span class="n">03</span><h2>毎月・毎年のお金</h2></div>
+ <p class="msg" id="m3"></p>
+ <div class="g2">
+  <div class="card">
+   <p class="ct">ふつうの月のお金の流れ（2年目）</p><p class="cs">単位：万円。家賃から順に引いていく。大きな修繕は「積立のめやす」として月割りにしています</p>
+   <div class="chart anim" id="c-wf"></div>
+  </div>
+  <div class="card">
+   <p class="ct">1年ごとの手残り</p><p class="cs">単位：万円。家賃 − 経費 − 返済 − その年の修繕。赤はマイナス（持ち出し）の年。家賃以外から足すお金は入れていません</p>
+   <div class="chart anim" id="c-cf"></div>
+   <div class="src"><span id="cf-note"></span><button class="tv" type="button" data-t="cf">表で見る</button></div>
+   <div class="tblwrap" id="tv-cf"></div>
+  </div>
+ </div>
+</section>
+
+<!-- 04 足すと -->
+<section class="sec" id="s4">
+ <div class="sec-h"><span class="n">04</span><h2>家賃以外から毎月いくら足すと、何年で終わるか</h2></div>
+ <p class="msg" id="m4"></p>
+ <div class="card">
+  <p class="ct">毎月足すお金と、完済までの年数</p><p class="cs">単位：年（購入から）。足したお金と家賃の余りを、手元に残す額を超えた分から繰上返済に回した場合。濃い棒が、いまの設定に一番近いもの</p>
+  <div class="chart anim" id="c-sens"></div>
+ </div>
+</section>
+
+<!-- 05 築年数 -->
+<section class="sec" id="s5">
+ <div class="sec-h"><span class="n">05</span><h2>1983年築RCの注意点：築年数と借りられる期間</h2></div>
+ <p class="msg" id="m5"></p>
+ <div class="g32">
+  <div class="card">
+   <p class="ct">建物の年齢と返済期間</p><p class="cs">法定耐用年数は税金の計算のための年数で、建物の寿命ではありません。ただ、銀行が融資期間を決める目安によく使います</p>
+   <div class="chart anim" id="c-age"></div>
+   <div class="src"><span>RCの法定耐用年数：住宅用47年／事務所用50年／店舗用39年（建物の主な用途で決まる）</span></div>
+  </div>
+  <div class="card">
+   <p class="ct">期間で変わる毎月の返済</p><p class="cs">いまの借入額・金利のまま、期間だけ変えた場合（単位：万円／月）</p>
+   <div style="overflow-x:auto"><table id="t-term"></table></div>
+   <p class="cs" style="margin-top:10px">法定の残り年数しか見ない銀行だと4年になり、現実的ではありません。建物の調査（劣化診断）をもとに長く見る銀行や、日本政策金融公庫（設備資金は一般に20年以内）などで、何年まで借りられるかを聞くのが第一歩です。</p>
+  </div>
+ </div>
+</section>
+
+<!-- 06 修繕 -->
+<section class="sec" id="s6">
+ <div class="sec-h"><span class="n">06</span><h2>修繕・設備の更新の予定（仮）</h2></div>
+ <p class="msg" id="m6"></p>
+ <div class="g32">
+  <div class="card">
+   <p class="ct">返済期間中にかかりそうな大きな出費</p><p class="cs">単位：万円。時期と金額は仮。前回の修繕がいつかで大きく変わります</p>
+   <div style="overflow-x:auto"><table id="t-rep"></table></div>
+  </div>
+  <div class="card">
+   <p class="ct">この建物で気をつけたいこと</p>
+   <ul class="pts">
+    <li><b>外壁・屋上の防水</b>：RCは12〜15年ごとが目安。築43年なら少なくとも2回目以降。足場代がかさむ。</li>
+    <li><b>給排水管・電気・受水槽</b>：築40年を超えると古い鉄の配管が傷みやすい。2階の工事で一緒に替えると割安なことも。</li>
+    <li><b>2階の水回りの新設</b>：排水管をどこに通すかで費用が大きく変わる。床を上げる・1階の天井を通すなど、見積もりで必ず確認。</li>
+    <li><b>アスベスト</b>：1983年築は使われている可能性がある。工事の前に調べることが法律で決まっている（調査費がかかる）。</li>
+    <li><b>新耐震かどうか</b>：基準は「完成した年」ではなく<b>建築確認を受けた日</b>が1981年6月1日以降か。確認済証の日付で見る。</li>
+    <li><b>消防設備</b>：1階が店舗、2階が貸室、3階が自宅になると、火災報知器などの設備が増えることがある。</li>
+   </ul>
+  </div>
+ </div>
+</section>
+
+<!-- 07 確かめる -->
+<section class="sec" id="s7">
+ <div class="sec-h"><span class="n">07</span><h2>数字を本物にするために確かめること</h2></div>
+ <p class="msg">ここがわかると、仮の数字を差しかえて目安の精度が上がります。上ほど結果への影響が大きいものです。</p>
+ <div class="g2">
+  <div class="card">
+   <p class="ct" style="margin-bottom:6px">銀行・お金のこと</p>
+   <ul class="chk">
+    <li><span class="ic b">1</span><span>何年・何%で借りられるか<small>築43年RCで期間をどう見るか。2〜3行に同じ条件で聞くと比べやすい</small></span></li>
+    <li><span class="ic b">2</span><span>3階の自宅部分の扱い<small>事業の融資では自宅部分は対象外とされやすい。住宅ローンと分けるか、自己資金で持つか</small></span></li>
+    <li><span class="ic x">3</span><span>2階の工事の見積もり（3室分）<small>キッチン・浴室・トイレ・排水・内装。仮に1室350万円で置いています</small></span></li>
+    <li><span class="ic x">4</span><span>固定資産税・都市計画税の額<small>売主の課税明細書で確認。仮に年45万円</small></span></li>
+    <li><span class="ic n">5</span><span>本人の収入から毎月いくら足せるか<small>家賃だけで足りないときの大事な数字</small></span></li>
+   </ul>
+  </div>
+  <div class="card">
+   <p class="ct" style="margin-bottom:6px">建物・入居のこと</p>
+   <ul class="chk">
+    <li><span class="ic b">6</span><span>前回の外壁・屋上の修繕はいつか<small>修繕履歴。なければ3年目に700万円で置いています</small></span></li>
+    <li><span class="ic x">7</span><span>確認済証・検査済証があるか<small>新耐震の確認と、銀行の評価に関わる</small></span></li>
+    <li><span class="ic x">8</span><span>1階テナント（ペット関連の教室）との賃貸契約の中身<small>契約期間・更新・解約の予告期間・敷金。1階は家賃の6割を占める</small></span></li>
+    <li><span class="ic x">9</span><span>2階の家賃の相場<small>近くの30㎡前後の部屋。仮に月6.0万円・空室10%</small></span></li>
+    <li><span class="ic n">10</span><span>建物の調査（劣化診断）<small>配管・防水・コンクリートの状態。銀行の融資期間の判断にも使われる</small></span></li>
+   </ul>
+  </div>
+ </div>
+ <p class="fine">この試算について：毎月の家賃は「家賃 ×（1 − 空室率）」。2階は工事中の月は家賃なし。家賃は年ごとに少しずつ下がる想定で、最初の7割を下限にしています。経費は固定資産税・保険・共用部の電気水道・小さな修繕・2階の管理委託料。所得税・住民税、減価償却、3階の自宅の生活費、売るときのことは入れていません。法定耐用年数を過ぎた中古建物の減価償却などの税金のことは、税理士に確かめてください。数字はすべて目安で、投資や融資の判断をすすめるものではありません。</p>
+</div>
+<div id="tip" role="tooltip"></div>
+
+<script>
+/* ===== 前提（単位：万円。who: u＝聞いた / k＝仮） ===== */
+const BUILT=1983, NOW=2026, AGE0=NOW-BUILT, LEGAL=47;
+const STD={price:5500,down:0,misc:400,renoLoan:1,term:20,rate:2.5,rateUp:0,rateUpY:5,
+ rent1:23.5,vac1:5,dec1:0,rooms:3,rentRoom:6.0,vac2:10,dec2:1,renoMonths:6,perRoom:350,
+ tax:45,ins:12,util:1.5,mgmt:5,small:30,
+ bigCost:700,bigY:3,bigEvery:15,eqCost:300,eqY:10,
+ extra:0,prepay:1,buffer:300};
+const SCEN={std:{},
+ hard:{rate:2.5,rateUp:1,rentRoom:5.5,vac2:20,vac1:10,dec2:1.5,perRoom:420,bigCost:900,eqCost:400},
+ easy:{rate:2.0,rentRoom:6.5,vac2:5,vac1:0,dec2:0.5,perRoom:300,bigCost:600}};
+// [キー, 名前, 最小, 最大, 刻み, 単位, 聞いた/仮, ひとこと, 置き場所]
+const CTL=[
+ ["@","借り方","main"],
+ ["term","借入期間",10,30,1,"年","k","築年数で銀行ごとに変わる。法定の残りは4年","main"],
+ ["rate","金利",0.5,5,0.1,"%","k","事業の融資として仮に2.5%","main"],
+ ["down","頭金（物件代に入れる自己資金）",0,2000,50,"万円","u","諸費用（約400万円）は別に自己資金","main"],
+ ["renoLoan","2階の工事費",0,1,1,"","u","","main",["自己資金で払う","借入に含める"]],
+ ["@","家賃","main"],
+ ["rentRoom","2階の家賃（1室あたり）",4,8,0.1,"万円","k","30㎡前後の部屋。共益費こみ","main"],
+ ["vac2","2階の空室率",0,30,1,"%","k","10%＝1年のうち約1.2か月空く","main"],
+ ["extra","家賃以外から足すお金（月）",0,40,1,"万円","k","本人の収入や、3階に移って浮く住居費・事務所代など","main"],
+ ["@","2階の部屋","more"],
+ ["rooms","2階の部屋数",3,4,1,"室","u","","more",["3室","4室"]],
+ ["perRoom","2階の工事費（1室あたり）",200,600,10,"万円","k","キッチン・浴室・トイレ・排水・内装","more"],
+ ["renoMonths","工事の期間（2階の家賃なし）",0,12,1,"か月","k","","more"],
+ ["dec2","2階の家賃の下がり方",0,3,0.5,"%/年","k","古くなるほど下がる。最初の7割で止まる想定","more"],
+ ["@","1階（テナント）","more"],
+ ["rent1","1階の家賃",15,30,0.5,"万円","u","入居中のテナント","more"],
+ ["vac1","1階の空室率",0,30,1,"%","k","退去して次が決まるまでの空きを平均したもの","more"],
+ ["@","経費（年・月）","more"],
+ ["tax","固定資産税・都市計画税（年）",20,100,1,"万円","k","課税明細書で確認","more"],
+ ["ins","火災・地震保険（年）",5,30,1,"万円","k","","more"],
+ ["util","共用部の電気・水道・清掃（月）",0,5,0.5,"万円","k","","more"],
+ ["mgmt","2階の管理委託料",0,10,1,"%","k","家賃の5%前後。自分で管理すれば0","more"],
+ ["small","小さな修繕・入退去の費用（年）",0,80,5,"万円","k","給湯器・エアコンの交換、退去後の補修など","more"],
+ ["@","大きな修繕","more"],
+ ["bigCost","外壁・屋上防水（1回）",300,1500,50,"万円","k","足場こみ","more"],
+ ["bigY","その1回目（購入から何年目）",1,15,1,"年目","k","前回の修繕がいつかで決まる","more"],
+ ["bigEvery","そのあとの間隔",10,20,1,"年ごと","k","","more"],
+ ["eqCost","給排水管・電気・受水槽の更新",0,1000,50,"万円","k","","more"],
+ ["eqY","その時期（購入から何年目）",1,20,1,"年目","k","","more"],
+ ["@","金利の上昇と繰上返済","more"],
+ ["rateUp","6年目からの金利の上がり幅",0,2,0.25,"%","k","変動金利の場合の備え","more"],
+ ["prepay","家賃の余りで繰上返済",0,1,1,"","k","","more",["しない","する"]],
+ ["buffer","手元に残しておく額",0,1000,50,"万円","k","これを超えた分を年に1回、繰上返済に回す","more"]
+];
+let P={...STD}, scen="std";
+
+/* ===== 計算（画面とは切り離した部分） ===== */
+const pmt=(r,n,pv)=>n<=0?pv:(r===0?pv/n:pv*r/(1-Math.pow(1+r,-n)));
+const nper=(r,pay,pv)=>r===0?pv/pay:-Math.log(1-r*pv/pay)/Math.log(1+r);
+function renoCost(p){return p.rooms*p.perRoom}
+function loanOf(p){return Math.max(0,p.price-p.down+(p.renoLoan?renoCost(p):0))}
+function monthFlow(p,m){ // m=1.. 購入からの月
+ const y=Math.ceil(m/12);
+ const f1=Math.max(.7,Math.pow(1-p.dec1/100,y-1)), f2=Math.max(.7,Math.pow(1-p.dec2/100,y-1));
+ const in1=p.rent1*(1-p.vac1/100)*f1;
+ const in2=m<=p.renoMonths?0:p.rooms*p.rentRoom*(1-p.vac2/100)*f2;
+ const exp=(p.tax+p.ins+p.small)/12+p.util+in2*p.mgmt/100;
+ return {in1,in2,exp};
+}
+function eventsIn(p,y){const e=[];
+ if(y>=p.bigY&&(y-p.bigY)%p.bigEvery===0)e.push(["外壁・屋上防水",p.bigCost]);
+ if(y===p.eqY&&p.eqCost>0)e.push(["給排水管・電気・受水槽",p.eqCost]);
+ return e}
+function sim(p,o={}){
+ const prepay=o.prepay??!!p.prepay, extra=o.extra??p.extra;
+ const loan=loanOf(p),T=p.term,N=T*12;
+ let bal=loan,r=p.rate/1200,pay=pmt(r,N,loan),cash=0,payoff=null;
+ const Y=[];let a={inc:0,exp:0,ds:0,ev:0,ext:0,pre:0,int:0};
+ for(let m=1;m<=N;m++){
+  const y=Math.ceil(m/12);
+  if(p.rateUp>0&&m===p.rateUpY*12+1&&bal>0){const n=Math.ceil(nper(r,pay,bal)-1e-9);r=(p.rate+p.rateUp)/1200;pay=pmt(r,n,bal)}
+  const f=monthFlow(p,m);
+  let ev=0;if(m%12===6)ev=eventsIn(p,y).reduce((s,e)=>s+e[1],0);
+  let ds=0;if(bal>0){const it=bal*r;const pr=Math.min(bal,pay-it);ds=it+pr;a.int+=it;bal-=pr;if(bal<1e-6){bal=0;payoff=payoff??m}}
+  cash+=f.in1+f.in2+extra-f.exp-ds-ev;
+  a.inc+=f.in1+f.in2;a.exp+=f.exp;a.ds+=ds;a.ev+=ev;a.ext+=extra;
+  if(m%12===0){
+   if(prepay&&bal>0&&cash>p.buffer){const x=Math.min(bal,cash-p.buffer);bal-=x;cash-=x;a.pre=x;if(bal<1e-6){bal=0;payoff=payoff??m}}
+   Y.push({y,bal,cash,...a,cf:a.inc-a.exp-a.ds-a.ev});a={inc:0,exp:0,ds:0,ev:0,ext:0,pre:0,int:0};
+  }
+ }
+ return {loan,pay0:pmt(p.rate/1200,N,loan),Y,payoff:payoff??N,minCash:Math.min(0,...Y.map(v=>v.cash)),endCash:Y[Y.length-1].cash,
+  interest:Y.reduce((s,v)=>s+v.int,0)};
+}
+function typical(p){ // 2年目のふつうの月
+ const f=monthFlow(p,18),pay=pmt(p.rate/1200,p.term*12,loanOf(p));
+ let ev=0;for(let y=1;y<=p.term;y++)ev+=eventsIn(p,y).reduce((s,e)=>s+e[1],0);
+ const reserve=ev/(p.term*12);
+ return {...f,inc:f.in1+f.in2,pay,net:f.in1+f.in2-f.exp-pay,reserve,netR:f.in1+f.in2-f.exp-pay-reserve,evTotal:ev};
+}
+
+/* ===== 小さな道具 ===== */
+const $=s=>document.querySelector(s);
+const f1=v=>(v<0?"−":"")+Math.abs(Math.round(v*10)/10).toLocaleString("ja-JP",{minimumFractionDigits:1,maximumFractionDigits:1});
+const f0=v=>(v<0?"−":"")+Math.abs(Math.round(v)).toLocaleString("ja-JP");
+const ym=m=>{m=Math.round(m);const y=Math.floor(m/12),r=m%12;return y+"年"+(r?r+"か月":"")};
+const yr1=m=>(Math.round(m/12*10)/10).toFixed(1);
+const tip=$("#tip");
+function showTip(e,html){tip.innerHTML=html;tip.style.opacity=1;const x=Math.max(8,Math.min(e.clientX+14,innerWidth-tip.offsetWidth-8));tip.style.left=x+"px";tip.style.top=(e.clientY-tip.offsetHeight-12<0?e.clientY+16:e.clientY-tip.offsetHeight-12)+"px"}
+document.addEventListener("pointermove",e=>{const t=e.target.closest("[data-tip]");if(t)showTip(e,t.dataset.tip);else tip.style.opacity=0});
+document.addEventListener("pointerdown",e=>{const t=e.target.closest("[data-tip]");if(t)showTip(e,t.dataset.tip);else tip.style.opacity=0});
+function niceStep(x){if(x<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(x)));return [1,2,2.5,5,10].find(k=>k*p>=x)*p}
+function range(lo,hi,steps=4){lo=Math.min(0,lo);hi=Math.max(0,hi);if(hi===lo)hi=lo+1;const st=niceStep((hi-lo)/steps);return {min:Math.floor(lo/st)*st,max:Math.ceil(hi/st)*st,st}}
+function gridY(w,h,pad,R,fmt){let s="";for(let v=R.min;v<=R.max+1e-9;v+=R.st){const y=pad.t+(h-pad.t-pad.b)*(1-(v-R.min)/(R.max-R.min));
+ s+=`<line x1="${pad.l}" x2="${w-pad.r}" y1="${y}" y2="${y}" stroke="${Math.abs(v)<1e-9?"var(--line-2)":"var(--grid)"}"/><text x="${pad.l-6}" y="${y+4}" text-anchor="end" font-size="10.5" fill="var(--ink-3)">${fmt(v)}</text>`}return s}
+const W=el=>Math.max(280,el.clientWidth);
+function tableView(k,head,rows){$("#tv-"+k).innerHTML=`<table><tr>${head.map(h=>`<th>${h}</th>`).join("")}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td class="num">${c}</td>`).join("")}</tr>`).join("")}</table>`}
+document.addEventListener("click",e=>{const b=e.target.closest(".tv");if(!b)return;const t=$("#tv-"+b.dataset.t);t.classList.toggle("on");b.textContent=t.classList.contains("on")?"表を閉じる":"表で見る"});
+const kfmt=v=>v>=10000?(v/10000).toFixed(v%10000?1:0)+"億":f0(v);
+
+/* ===== グラフ：残高 ===== */
+function chBal(base,pre){
+ const el=$("#c-bal"),w=W(el),h=260,pad={t:20,r:w<480?64:96,b:26,l:44},T=P.term;
+ const R=range(0,base.loan),x=i=>pad.l+(w-pad.l-pad.r)*i/T,y=v=>pad.t+(h-pad.t-pad.b)*(1-(v-R.min)/(R.max-R.min));
+ let s=gridY(w,h,pad,R,kfmt);
+ const every=w<480?5:(T>20?5:2);
+ for(let i=0;i<=T;i++)if(i%every===0||i===T)s+=`<text x="${x(i)}" y="${h-6}" text-anchor="middle" font-size="10.5" fill="var(--ink-3)">${i}年</text>`;
+ const bp=[[x(0),y(base.loan)],...base.Y.map(v=>[x(v.y),y(v.bal)])];
+ const pp=[[x(0),y(pre.loan)]];for(const v of pre.Y){pp.push([x(v.y),y(v.bal)]);if(v.bal<=0)break}
+ if(pre.payoff<T*12){const last=pp[pp.length-1];last[0]=x(pre.payoff/12)}
+ s+=`<polygon points="${pp.map(p=>p.join(",")).join(" ")} ${pp[pp.length-1][0]},${y(0)} ${x(0)},${y(0)}" fill="var(--s1)" opacity=".12"/>`;
+ s+=`<polyline points="${bp.map(p=>p.join(",")).join(" ")}" fill="none" stroke="var(--neutral)" stroke-width="2.5" stroke-linejoin="round"/>`;
+ s+=`<polyline points="${pp.map(p=>p.join(",")).join(" ")}" fill="none" stroke="var(--s1)" stroke-width="2.5" stroke-linejoin="round"/>`;
+ const e1=bp[bp.length-1],e2=pp[pp.length-1];
+ s+=`<circle cx="${e1[0]}" cy="${e1[1]}" r="4.5" fill="var(--neutral)" stroke="var(--panel)" stroke-width="2"/>`;
+ s+=`<text x="${e1[0]+8}" y="${e1[1]-8}" font-size="11" fill="var(--ink-2)">予定 ${T}年</text>`;
+ if(pre.payoff<T*12-1){
+  s+=`<circle cx="${e2[0]}" cy="${e2[1]}" r="6" fill="var(--s1)" stroke="var(--panel)" stroke-width="2"/>`;
+  s+=`<text x="${e2[0]}" y="${e2[1]-12}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">完済 ${ym(pre.payoff)}</text>`;
+ }
+ s+=`<text x="${x(0)+6}" y="${y(base.loan)-6}" font-size="11" font-weight="700" fill="var(--ink)">${f0(base.loan)}万円</text>`;
+ base.Y.forEach((v,i)=>{const q=pre.Y[i];s+=`<rect class="hit" x="${x(v.y-.5)}" y="${pad.t}" width="${x(1)-x(0)}" height="${h-pad.t-pad.b}" data-tip="<b>${v.y}年目の終わり（${NOW+v.y}年・築${AGE0+v.y}年）</b><br>予定どおり：残り ${f0(v.bal)}万円<br>繰上返済あり：残り ${f0(q.bal)}万円"/>`});
+ el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" height="${h}" role="img" aria-label="ローン残高の推移">${s}</svg>`;
+ tableView("bal",["年目","西暦","築","残高（予定）","残高（繰上あり）","その年の繰上返済"],base.Y.map((v,i)=>[v.y,NOW+v.y,AGE0+v.y,f0(v.bal),f0(pre.Y[i].bal),pre.Y[i].pre?f0(pre.Y[i].pre):"—"]));
+}
+
+/* ===== グラフ：ふつうの月の流れ（階段） ===== */
+function chWF(t){
+ const steps=[{l:"1階\n家賃",v:t.in1},{l:"2階\n家賃",v:t.in2},{l:"経費",v:-t.exp},{l:"返済",v:-t.pay},{l:"手残り",v:t.net,total:1},{l:"修繕の\n積立",v:-t.reserve},{l:"修繕も\n見込むと",v:t.netR,total:1}];
+ const el=$("#c-wf"),w=W(el),h=250,pad={t:22,r:6,b:38,l:6};
+ let run=0;const bars=steps.map(s=>{if(s.total){run=s.v;return {...s,a:0,b:s.v}}const a=run;run+=s.v;return {...s,a,b:run}});
+ const lo=Math.min(0,...bars.map(b=>Math.min(b.a,b.b))),hi=Math.max(...bars.map(b=>Math.max(b.a,b.b)));
+ const y=v=>pad.t+(h-pad.t-pad.b)*(1-(v-lo)/(hi-lo)),bw=(w-pad.l-pad.r)/bars.length,fs=w<420?9.5:10.5;
+ let s=`<line x1="${pad.l}" x2="${w-pad.r}" y1="${y(0)}" y2="${y(0)}" stroke="var(--line-2)"/>`;
+ bars.forEach((b,i)=>{const x=pad.l+i*bw+bw*.14,bwd=bw*.72,top=y(Math.max(b.a,b.b)),hh=Math.max(2,Math.abs(y(b.a)-y(b.b)));
+  const fill=b.total?(b.v<0?"var(--bad)":"var(--good)"):(b.v>0?"var(--s1)":"var(--neutral)");
+  s+=`<rect x="${x}" y="${top}" width="${bwd}" height="${hh}" rx="4" fill="${fill}"/>`;
+  if(i<bars.length-1&&!bars[i+1].total){const nx=pad.l+(i+1)*bw+bw*.14;s+=`<line x1="${x+bwd}" x2="${nx}" y1="${y(b.b)}" y2="${y(b.b)}" stroke="var(--ink-3)" stroke-dasharray="2 3"/>`}
+  const val=b.total?f1(b.v):(b.v<0?"−":"+")+f1(Math.abs(b.v)).replace("−","");
+  const ty=top-6;
+  s+=`<text x="${x+bwd/2}" y="${ty}" text-anchor="middle" font-size="${fs}" font-weight="${b.total?700:500}" fill="${b.total?"var(--ink)":"var(--ink-2)"}">${val}</text>`;
+  b.l.split("\n").forEach((tx,j)=>s+=`<text x="${x+bwd/2}" y="${h-pad.b+14+j*12}" text-anchor="middle" font-size="${fs}" fill="var(--ink-3)">${tx}</text>`);
+  s+=`<rect class="hit" x="${pad.l+i*bw}" y="${pad.t}" width="${bw}" height="${h-pad.t-pad.b}" data-tip="<b>${b.l.replace("\n","")}</b><br>${b.total?"":(b.v<0?"−":"+")}${f1(Math.abs(b.v))}万円／月"/>`});
+ el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" height="${h}" role="img" aria-label="ふつうの月のお金の流れ">${s}</svg>`;
+}
+
+/* ===== グラフ：1年ごとの手残り ===== */
+function chCF(sv){
+ const el=$("#c-cf"),w=W(el),h=250,pad={t:16,r:8,b:24,l:44},T=P.term;
+ const R=range(Math.min(...sv.Y.map(v=>v.cf)),Math.max(...sv.Y.map(v=>v.cf)));
+ const y=v=>pad.t+(h-pad.t-pad.b)*(1-(v-R.min)/(R.max-R.min)),bw=(w-pad.l-pad.r)/T;
+ let s=gridY(w,h,pad,R,f0);
+ sv.Y.forEach((v,i)=>{const x=pad.l+i*bw+bw*.15,bwd=bw*.7,t=Math.min(y(v.cf),y(0)),hh=Math.max(1.5,Math.abs(y(v.cf)-y(0)));
+  s+=`<rect x="${x}" y="${t}" width="${bwd}" height="${hh}" rx="${Math.min(3,bwd/3)}" fill="${v.cf<0?"var(--bad)":"var(--s1)"}" opacity="${v.ev?1:.8}"/>`;
+  if((i+1)%5===0||i===0)s+=`<text x="${x+bwd/2}" y="${h-6}" text-anchor="middle" font-size="10.5" fill="var(--ink-3)">${v.y}年</text>`;
+  const ev=eventsIn(P,v.y);
+  s+=`<rect class="hit" x="${pad.l+i*bw}" y="${pad.t}" width="${bw}" height="${h-pad.t-pad.b}" data-tip="<b>${v.y}年目（${NOW+v.y}年）</b><br>家賃 ${f0(v.inc)}／経費 −${f0(v.exp)}<br>返済 −${f0(v.ds)}${v.ev?`<br>修繕 −${f0(v.ev)}（${ev.map(e=>e[0]).join("・")}）`:""}<br><b>手残り ${f0(v.cf)}万円</b>"/>`});
+ const worst=sv.Y.reduce((a,b)=>b.cf<a.cf?b:a);
+ if(worst.cf<0){const i=worst.y-1,x=pad.l+i*bw+bw/2;s+=`<text x="${Math.min(w-pad.r-4,Math.max(pad.l+30,x))}" y="${y(worst.cf)+14}" text-anchor="middle" font-size="11" font-weight="700" fill="var(--bad)">${f0(worst.cf)}</text>`}
+ el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" height="${h}" role="img" aria-label="1年ごとの手残り">${s}</svg>`;
+ tableView("cf",["年目","家賃","経費","返済","修繕","手残り","足したお金","繰上返済","手元のお金"],sv.Y.map(v=>[v.y,f0(v.inc),f0(v.exp),f0(v.ds),v.ev?f0(v.ev):"—",f0(v.cf),v.ext?f0(v.ext):"—",v.pre?f0(v.pre):"—",f0(v.cash)]));
+}
+
+/* ===== グラフ：足すと何年 ===== */
+const EXTRAS=[0,5,10,15,20,25,30,40];
+function chSens(){
+ const res=EXTRAS.map(e=>({e,m:sim(P,{prepay:true,extra:e}).payoff}));
+ const el=$("#c-sens"),w=W(el),h=230,pad={t:24,r:8,b:30,l:34},T=P.term;
+ const R=range(0,T,4),y=v=>pad.t+(h-pad.t-pad.b)*(1-v/R.max),bw=(w-pad.l-pad.r)/res.length;
+ const near=EXTRAS.reduce((a,b)=>Math.abs(b-P.extra)<Math.abs(a-P.extra)?b:a);
+ let s=gridY(w,h,pad,R,v=>v+"年");
+ res.forEach((r,i)=>{const x=pad.l+i*bw+bw*.18,bwd=bw*.64,yy=r.m/12,cur=r.e===near;
+  s+=`<rect x="${x}" y="${y(yy)}" width="${bwd}" height="${y(0)-y(yy)}" rx="4" fill="var(--s1)" opacity="${cur?1:.4}"/>`;
+  s+=`<text x="${x+bwd/2}" y="${y(yy)-6}" text-anchor="middle" font-size="${w<420?9.5:11}" font-weight="${cur?700:500}" fill="${cur?"var(--ink)":"var(--ink-2)"}">${yr1(r.m)}</text>`;
+  s+=`<text x="${x+bwd/2}" y="${h-12}" text-anchor="middle" font-size="10.5" fill="var(--ink-3)">${r.e}万</text>`;
+  s+=`<rect class="hit" x="${pad.l+i*bw}" y="${pad.t}" width="${bw}" height="${h-pad.t-pad.b}" data-tip="<b>毎月 ${r.e}万円 足すと</b><br>購入から ${ym(r.m)}で完済<br>（2階の完成からは ${ym(r.m-P.renoMonths)}）"/>`});
+ s+=`<text x="${w-pad.r}" y="${h}" text-anchor="end" font-size="10" fill="var(--ink-3)">毎月足すお金</text>`;
+ el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" height="${h}" role="img" aria-label="毎月足すお金と完済までの年数">${s}</svg>`;
+ return res;
+}
+
+/* ===== グラフ：築年数の帯 ===== */
+function chAge(pre){
+ const el=$("#c-age"),w=W(el),h=150,pad={l:12,r:12},T=P.term;
+ const y0=1980,y1=Math.max(NOW+T,BUILT+LEGAL)+4,x=v=>pad.l+(w-pad.l-pad.r)*(v-y0)/(y1-y0),by=66,bh=16;
+ const pay=NOW+pre.payoff/12;
+ let s=`<rect x="${x(BUILT)}" y="${by}" width="${x(NOW)-x(BUILT)}" height="${bh}" rx="4" fill="var(--neutral-2)"/>`;
+ s+=`<rect x="${x(NOW)}" y="${by}" width="${x(NOW+T)-x(NOW)}" height="${bh}" rx="4" fill="var(--s1)" opacity=".35"/>`;
+ s+=`<rect x="${x(NOW)}" y="${by}" width="${x(pay)-x(NOW)}" height="${bh}" rx="4" fill="var(--s1)"/>`;
+ s+=`<line x1="${x(BUILT+LEGAL)}" x2="${x(BUILT+LEGAL)}" y1="${by-10}" y2="${by+bh+26}" stroke="var(--warn)" stroke-width="2" stroke-dasharray="4 3"/>`;
+ const fs=w<420?10:11;
+ s+=`<text x="${x(BUILT)}" y="${by+bh+16}" font-size="${fs}" fill="var(--ink-2)">1983 建築</text>`;
+ s+=`<text x="${x(BUILT+LEGAL)+5}" y="${by+bh+40}" text-anchor="middle" font-size="${fs}" font-weight="700" fill="var(--warn)">${BUILT+LEGAL} 法定47年</text>`;
+ s+=`<text x="${x(NOW)}" y="${by-14}" text-anchor="middle" font-size="${fs}" fill="var(--ink-2)">${NOW} 購入（築${AGE0}）</text>`;
+ s+=`<line x1="${x(NOW)}" x2="${x(NOW)}" y1="${by-10}" y2="${by}" stroke="var(--ink-3)"/>`;
+ const px=Math.min(x(pay),w-pad.r-40);
+ s+=`<text x="${px}" y="${by-34}" text-anchor="middle" font-size="${fs+1}" font-weight="700" fill="var(--ink)">完済 ${Math.floor(pay)}年ごろ</text>`;
+ s+=`<text x="${px}" y="${by-20}" text-anchor="middle" font-size="${fs}" fill="var(--ink-2)">築${Math.round(AGE0+pre.payoff/12)}年</text>`;
+ s+=`<line x1="${x(pay)}" x2="${x(pay)}" y1="${by-16}" y2="${by}" stroke="var(--s1)" stroke-width="2"/>`;
+ if(pre.payoff<T*12-1)s+=`<text x="${Math.min(x(NOW+T),w-pad.r)}" y="${by+bh+16}" text-anchor="end" font-size="${fs}" fill="var(--ink-3)">予定の最後 ${NOW+T}</text>`;
+ s+=`<rect class="hit" x="${x(BUILT)}" y="${by}" width="${x(NOW)-x(BUILT)}" height="${bh}" data-tip="<b>これまで ${AGE0}年</b><br>1983年築。法定耐用年数（住宅用47年）の残りは ${LEGAL-AGE0}年"/>`;
+ s+=`<rect class="hit" x="${x(NOW)}" y="${by}" width="${x(NOW+T)-x(NOW)}" height="${bh}" data-tip="<b>返済期間 ${T}年</b><br>${NOW}〜${NOW+T}年（築${AGE0}〜${AGE0+T}年）<br>繰上返済ありの完済：${ym(pre.payoff)}"/>`;
+ el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" height="${h}" role="img" aria-label="建物の年齢と返済期間">${s}</svg>`;
+}
+
+/* ===== 画面を描く ===== */
+function sameAs(o){return Object.keys(o).every(k=>P[k]===o[k])}
+function render(){
+ const base=sim(P,{prepay:false}),pre=sim(P,{prepay:!!P.prepay}),t=typical(P),T=P.term;
+ const sens=chSens();
+ const isStd=sameAs(STD)&&scen==="std";
+ const who=isStd?"標準ケースでは":(scen==="hard"&&sameAs({...STD,...SCEN.hard})?"厳しめの想定では":(scen==="easy"&&sameAs({...STD,...SCEN.easy})?"甘めの想定では":"いまの条件では"));
+ const fromDone=pre.payoff-P.renoMonths;
+ $("#h1").innerHTML=`${who}、2階の完成から<span class="big">約${ym(fromDone)}</span>で完済${pre.payoff<T*12-1?"":`（借入期間${T}年どおり）`}`;
+ const own=P.misc+P.down+(P.renoLoan?0:renoCost(P));
+ $("#lede").innerHTML=`購入からは${ym(pre.payoff)}（${NOW+Math.floor(pre.payoff/12)}年ごろ・築${Math.round(AGE0+pre.payoff/12)}年）。借入 ${f0(base.loan)}万円・${P.rate}%・${T}年、自己資金 ${f0(own)}万円の場合。`;
+ const st=$("#status");st.classList.toggle("okk",t.netR>=0);
+ st.lastElementChild.textContent=t.net<0?`家賃だけでは、毎月 約${f1(-t.net)}万円 足りない`:(t.netR<0?`ふだんは残るが、修繕まで見ると毎月 約${f1(-t.netR)}万円 足りない`:`家賃だけで返せて、修繕を見込んでも毎月 約${f1(t.netR)}万円 残る`);
+ // 要点
+ $("#tk1").innerHTML=t.net<0?`2年目のふつうの月で、家賃 <b>${f1(t.inc)}万円</b> から経費と返済を引くと <b class="neg">${f1(t.net)}万円</b>。家賃だけでは返済に足りず、<b>本人の収入などから足す前提</b>になる。`
+  :`2年目のふつうの月で、家賃 <b>${f1(t.inc)}万円</b> から経費と返済 <b>${f1(t.pay)}万円</b> を引いて <b>${f1(t.net)}万円</b> 残る。大きな修繕の積立（月 ${f1(t.reserve)}万円）を見込むと <b class="${t.netR<0?"neg":""}">${f1(t.netR)}万円</b>。`;
+ const s20=sens.find(r=>r.e===20),s30=sens.find(r=>r.e===30),first=sens.find(r=>r.m<T*12-1);
+ $("#tk2").innerHTML=pre.payoff<T*12-1?`余りを繰上返済に回すと <b>購入から${ym(pre.payoff)}で完済</b>。予定の${T}年より <b>${ym(T*12-pre.payoff)}</b> 早い。`
+  :(first?`余りが出ないので繰上返済はできず、完済は予定どおり ${T}年。家賃以外から毎月 <b>${first.e}万円</b> 足すと約${yr1(first.m)}年、<b>30万円</b> なら約${yr1(s30.m)}年で完済。`
+  :`余りが出ないので繰上返済はできず、完済は予定どおり ${T}年。毎月40万円足しても縮まらない条件です。`);
+ $("#tk3").innerHTML=`築${AGE0}年のRCは、法定耐用年数（住宅用47年）の<b>残りが${LEGAL-AGE0}年</b>。${T}年借りられるかは銀行の見方しだいで、予定どおりなら完済時は<b>築${AGE0+T}年</b>。`;
+ // 数字カード
+ const ratio=t.pay/t.inc*100;
+ const K=[["借入額",f0(base.loan),"万円",`物件 ${f0(P.price-P.down)}${P.renoLoan?`＋2階の工事 ${f0(renoCost(P))}`:""}`],
+  ["必要な自己資金",f0(own),"万円",`諸費用 ${P.misc}${P.down?`＋頭金 ${f0(P.down)}`:""}${P.renoLoan?"":`＋工事 ${f0(renoCost(P))}`}（仮）`],
+  ["毎月の返済",f1(t.pay),"万円",`${P.rate}%・${T}年・元利均等。利息の合計 ${f0(base.interest)}万円`],
+  ["家賃収入（月）",f1(t.inc),"万円",`1階 ${f1(t.in1)}＋2階 ${f1(t.in2)}（空室を引いた後）`],
+  ["毎月の手残り",f1(t.net),"万円",`家賃 − 経費 ${f1(t.exp)} − 返済。修繕の積立は別`,t.net<0?"neg":"pos"],
+  ["完済まで（購入から）",ym(pre.payoff).replace(/年(\d)/,"年 $1"),"",pre.payoff<T*12-1?`繰上返済あり。予定は${T}年`:`繰上返済に回す余りなし`],
+  ["完済時の築年数",String(Math.round(AGE0+pre.payoff/12)),"年",`いま築${AGE0}年。法定耐用年数の残り${LEGAL-AGE0}年`],
+  ["返済比率",ratio.toFixed(0),"%","家賃収入のうち返済に消える割合。低いほど余裕",ratio>70?"neg":""]];
+ $("#kpis").innerHTML=K.map(k=>`<div class="card kpi"><div class="k-lbl">${k[0]}</div><div class="k-val num ${k[4]||""}">${k[1]}<small>${k[2]}</small></div><div class="k-sub">${k[3]}</div></div>`).join("");
+ // 上の帯
+ $("#live").innerHTML=`<span>完済 <b>${ym(pre.payoff)}</b></span><span>毎月の手残り <b class="${t.net<0?"neg":""}">${f1(t.net)}万円</b></span><span>借入 <b>${f0(base.loan)}万円</b></span><span>返済 <b>${f1(t.pay)}万円/月</b></span>`;
+ // 章の一文
+ $("#m2").innerHTML=pre.payoff<T*12-1?`予定どおりだと${T}年で返し終わる。家賃の余りを繰上返済に回すと<b>${ym(pre.payoff)}</b>で終わり、利息も <b>${f0(base.interest-pre.interest)}万円</b> 少なくなる。`
+  :`家賃の余りが出ないため、繰上返済しても<b>${T}年のまま</b>。早く終えるには、家賃以外のお金を足すか、条件を変える必要がある（04で見られます）。`;
+ const neg=pre.Y.filter(v=>v.cf<0).length;
+ $("#m3").innerHTML=`ふつうの月は<b class="${t.net<0?"neg":""}">${f1(t.net)}万円</b>。さらに外壁・屋上の防水などの大きな修繕が${T}年で計 <b>${f0(t.evTotal)}万円</b>（月にならすと ${f1(t.reserve)}万円）かかる想定で、<b>${T}年のうち${neg}年</b>は年の手残りがマイナスになる。`;
+ $("#cf-note").textContent=`${T}年間の手元のお金の動き（足したお金・繰上返済こみ）：一番少ないとき ${f0(pre.minCash)}万円`;
+ const zero=sens[0].m;
+ $("#m4").innerHTML=first?`家賃だけだと<b>${ym(zero)}</b>。毎月 <b>${first.e}万円</b> 足すあたりから早まりはじめ、<b>20万円</b> なら約${yr1(s20.m)}年。足したお金は手元に一度ためて、修繕に使った残りを返す計算です。`
+  :`この条件では、毎月40万円足しても予定の${T}年から縮まりません。`;
+ $("#m5").innerHTML=`1983年築は<b>新耐震</b>（1981年6月以降の基準）の建物とされるが、法定耐用年数47年に対して<b>残りは${LEGAL-AGE0}年</b>。銀行によっては、この残りの年数までしか貸さない。${T}年で借りると完済は<b>築${AGE0+T}年</b>。`;
+ $("#t-term").innerHTML=`<tr><th>期間</th><th>毎月の返済</th><th>毎月の手残り</th><th>完済時の築</th></tr>`+[4,10,15,20,25,30].map(n=>{const pay=pmt(P.rate/1200,n*12,base.loan),net=t.inc-t.exp-pay;return `<tr${n===T?' style="background:var(--brand-s)"':""}><td>${n}年${n===4?"（法定の残り）":""}</td><td class="num">${f1(pay)}</td><td class="num ${net<0?"neg":""}">${f1(net)}</td><td class="num">築${AGE0+n}年</td></tr>`}).join("");
+ // 修繕の表
+ const ev=[];for(let y=1;y<=T;y++)eventsIn(P,y).forEach(e=>ev.push([y,e[0],e[1]]));
+ $("#t-rep").innerHTML=`<tr><th>時期</th><th class="l">内容</th><th>費用</th></tr>`+ev.map(e=>`<tr><td>${e[0]}年目（${NOW+e[0]}年・築${AGE0+e[0]}）</td><td class="l">${e[1]}</td><td class="num">${f0(e[2])}</td></tr>`).join("")+
+  `<tr><td>毎年</td><td class="l">小さな修繕・入退去の費用</td><td class="num">${f0(P.small)}／年</td></tr><tr><td><b>${T}年の合計</b></td><td class="l"></td><td class="num"><b>${f0(t.evTotal+P.small*T)}</b></td></tr>`;
+ $("#m6").innerHTML=`大きな修繕は${T}年で<b>${ev.length}回・計${f0(t.evTotal)}万円</b>（仮）。1回目は<b>${P.bigY}年目</b>に置いていますが、前回いつ直したかがわかれば差しかえます。`;
+ chBal(base,pre);chWF(t);chCF(pre);chAge(pre);
+}
+
+/* ===== スライダー ===== */
+function fmtV(c,v){if(c[9])return c[9][v===c[3]?1:0];return (c[4]<1?v.toFixed(c[4]<0.5?2:1):f0(v))+c[5]}
+function buildCtl(){
+ ["main","more"].forEach(place=>{
+  $("#ctl-"+place).innerHTML=CTL.filter(c=>(c[0]==="@"?c[2]:c[8])===place).map(c=>{
+   if(c[0]==="@")return `<div class="grp">${c[1]}</div>`;
+   const tag=`<span class="who ${c[6]}">${c[6]==="u"?"聞いた":"仮"}</span>`;
+   if(c[9])return `<div class="sl"><label>${c[1]}${tag}</label><div class="tg" data-k="${c[0]}">${c[9].map((o,i)=>`<button type="button" data-v="${i?c[3]:c[2]}">${o}</button>`).join("")}</div>${c[7]?`<small>${c[7]}</small>`:""}</div>`;
+   return `<div class="sl"><label for="r-${c[0]}"><span>${c[1]}${tag}</span><b id="v-${c[0]}" class="num"></b></label><input type="range" id="r-${c[0]}" min="${c[2]}" max="${c[3]}" step="${c[4]}" data-k="${c[0]}">${c[7]?`<small>${c[7]}</small>`:""}</div>`;
+  }).join("")});
+ document.querySelectorAll("input[type=range]").forEach(r=>r.addEventListener("input",()=>{P[r.dataset.k]=+r.value;setScen("custom");sync();redraw()}));
+ document.querySelectorAll(".tg button").forEach(b=>b.addEventListener("click",()=>{P[b.parentElement.dataset.k]=+b.dataset.v;setScen("custom");sync();redraw()}));
+ document.querySelectorAll(".scen button[data-s]").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.s==="custom")return;P={...STD,...SCEN[b.dataset.s]};setScen(b.dataset.s);sync();redraw()}));
+}
+function setScen(s){scen=s;document.querySelectorAll(".scen button").forEach(b=>b.classList.toggle("on",b.dataset.s===s))}
+function sync(){CTL.forEach(c=>{if(c[0]==="@")return;const v=P[c[0]];
+ if(c[9]){document.querySelectorAll(`.tg[data-k="${c[0]}"] button`).forEach(b=>b.classList.toggle("on",+b.dataset.v===v));return}
+ $("#r-"+c[0]).value=v;$("#v-"+c[0]).textContent=fmtV(c,v)})}
+function redraw(){document.querySelectorAll(".anim").forEach(a=>{a.dataset.shown=1;a.classList.remove("play")});render()}
+
+/* ===== 明るさの切り替え ===== */
+const ROOT=document.documentElement,THEMEKEY="rc-loan-theme";
+const SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>';
+const MOON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z"/></svg>';
+const curTheme=()=>ROOT.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
+const setIcon=()=>{$("#theme").innerHTML=curTheme()==="dark"?SUN:MOON};
+try{const t=localStorage.getItem(THEMEKEY);if(t)ROOT.dataset.theme=t}catch(e){}
+setIcon();
+$("#theme").onclick=()=>{const n=curTheme()==="dark"?"light":"dark";ROOT.dataset.theme=n;try{localStorage.setItem(THEMEKEY,n)}catch(e){}setIcon()};
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",setIcon);
+
+/* ===== 動き（一回きりの短い動きは、設定に関係なく出す） ===== */
+function decorate(el){
+ el.querySelectorAll("svg rect:not(.hit)").forEach((r,i)=>{r.classList.add("gb");r.style.setProperty("--d",(Math.min(i,26)*0.03)+"s")});
+ el.querySelectorAll("svg polyline").forEach(p=>{p.classList.add("dl");p.setAttribute("pathLength","1")});
+ el.querySelectorAll("svg circle,svg polygon,svg line[stroke-dasharray]").forEach((c,i)=>{c.classList.add("fi");c.style.setProperty("--d",(0.6+Math.min(i,20)*0.03)+"s")});
+ el.querySelectorAll("svg text").forEach(t=>{if(t.getAttribute("fill")!=="var(--ink-3)"){t.classList.add("fi");t.style.setProperty("--d","1s")}});
+}
+let io=null;try{io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)reveal(e.target)}),{threshold:.15})}catch(e){}
+function reveal(c){if(c.dataset.shown)return;c.dataset.shown=1;io&&io.unobserve(c);
+ if(c.classList.contains("rv")){c.classList.add("in");return}
+ decorate(c);c.classList.add("play");setTimeout(()=>c.classList.remove("play"),2600)}
+function checkVisible(){document.querySelectorAll(".anim:not([data-shown]),.rv:not([data-shown])").forEach(c=>{const r=c.getBoundingClientRect();if(r.top<innerHeight*0.9&&r.bottom>0)reveal(c)})}
+function startMotion(){
+ document.querySelectorAll(".sec-h,.sec .msg,.sec .card").forEach(x=>{x.classList.add("rv");io&&io.observe(x)});
+ document.querySelectorAll(".anim").forEach(c=>io&&io.observe(c));
+ addEventListener("scroll",checkVisible,{passive:true});checkVisible();
+ setTimeout(()=>document.querySelectorAll(".rv:not(.in)").forEach(x=>{x.dataset.shown=1;x.classList.add("in")}),4000);
+}
+
+buildCtl();sync();render();startMotion();
+let rt,lastW=$(".wrap").clientWidth;new ResizeObserver(()=>{const w=$(".wrap").clientWidth;if(w===lastW)return;lastW=w;clearTimeout(rt);rt=setTimeout(redraw,120)}).observe($(".wrap"));
+</script>
+</body>
+</html>
