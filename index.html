@@ -38,7 +38,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .top-in{max-width:1120px;margin:0 auto;padding-block:9px 7px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;align-items:center;gap:12px}
 .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--brand-2));flex:none}
-.top b{font-size:14px;white-space:nowrap}
+.top-in>b{font-size:14px;white-space:nowrap}
 .chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-left:auto;min-width:0}
 .chips::-webkit-scrollbar{display:none}
 .chips a{flex:none;text-decoration:none;color:var(--ink-2);font-size:12.5px;padding:5px 11px;border-radius:999px;border:1px solid var(--line-2);background:var(--panel)}
@@ -151,7 +151,7 @@ details.more .ctl{margin-top:12px}
 @media (max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.hero,.g2,.g32{grid-template-columns:1fr}.ctl{grid-template-columns:1fr 1fr}}
 @media (max-width:600px){
  h1{font-size:22px}.kpis{gap:10px}.k-val{font-size:20px}
- .card{padding:14px;border-radius:14px}.top b{display:none}
+ .card{padding:14px;border-radius:14px}.top-in>b{display:none}
  .sec{margin-top:28px}.sec-h h2{font-size:17px}.ctl{grid-template-columns:1fr}.chips a{padding:4px 9px}}
 </style>
 </head>
