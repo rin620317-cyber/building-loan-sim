@@ -30,7 +30,7 @@
 --s1:#3987e5;--s2:#d95926;--s3:#199e70;--neutral:#4b4e6b;--neutral-2:#33354f;
 --good:#2fc72f;--bad:#ff6b6b;--warn:#fab219;--warn-s:rgba(250,178,25,.13);--bad-s:rgba(255,107,107,.12);--good-s:rgba(47,199,47,.12);
 --grid:rgba(160,170,255,.08);--shadow:0 12px 30px -16px rgba(0,0,0,.75)}
-*{box-sizing:border-box}
+*{box-sizing:border-box}[hidden]{display:none!important}
 html{scroll-behavior:smooth;scroll-padding-top:96px}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,"Noto Sans JP","Hiragino Sans","Yu Gothic UI",sans-serif;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;transition:background-color .35s,color .35s}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
@@ -197,10 +197,11 @@ details.more .ctl{margin-top:12px}
  <p class="msg">動かすと、上の結論とすべてのグラフがその場で変わります。<span class="who u" style="font-size:11px;font-weight:600;border-radius:5px;padding:0 5px">聞いた</span>はお聞きした数字、<span class="who k" style="font-size:11px;font-weight:600;border-radius:5px;padding:0 5px">仮</span>は一般的な想定です。</p>
  <div class="card">
   <div class="scen" role="group" aria-label="想定の切り替え">
-   <button type="button" data-s="std" class="on">標準</button><button type="button" data-s="hard">厳しめ</button><button type="button" data-s="pet">ペット可</button><button type="button" data-s="easy">甘め</button><button type="button" data-s="custom" disabled style="opacity:.6">自分で変えた</button>
+   <button type="button" data-s="std" class="on">標準</button><button type="button" data-s="hard">厳しめ</button><button type="button" data-s="pet">ペット可</button><button type="button" data-s="office">2階を事務所</button><button type="button" data-s="easy">甘め</button><button type="button" data-s="custom" disabled style="opacity:.6">自分で変えた</button>
   </div>
   <div class="ctl" id="ctl-main"></div>
   <details class="more"><summary>細かい条件（家賃・経費・修繕・繰上返済）</summary><div class="ctl" id="ctl-more"></div></details>
+  <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)"><p class="ct">2階の使い方で比べる</p><p class="cs">ほかの条件はいまのままで、2階の使い方だけ変えた場合（単位：万円）。色のついた列が、いま選んでいる使い方</p><div style="overflow-x:auto"><table id="t-use"></table></div></div>
  </div>
 </section>
 
@@ -324,9 +325,10 @@ const STD={price:5500,down:0,misc:400,renoLoan:1,term:20,rate:2.5,rateUp:0,rateU
  rent1:23.5,vac1:5,dec1:0,rooms:3,rentRoom:5.5,vac2:10,dec2:1,renoMonths:6,perRoom:350,
  tax:45,ins:12,util:1.5,mgmt:0,small:30,
  bigCost:1000,bigY:1,bigEvery:15,eqCost:300,eqY:2,direct:150,
- extra:7,prepay:1,buffer:300};
+ extra:7,prepay:1,buffer:300,use2:0,officeRent:13,officeReno:200,officeMonths:2};
 const SCEN={std:{},
  pet:{rentRoom:6.5},
+ office:{use2:1},
  hard:{rate:3.0,rateUp:1,rentRoom:5.0,vac2:20,vac1:10,dec2:1.5,perRoom:450,bigCost:1300,eqCost:400},
  easy:{rate:2.0,rentRoom:6.5,vac2:5,vac1:0,dec2:0.5,perRoom:300,bigCost:800}};
 // [キー, 名前, 最小, 最大, 刻み, 単位, 聞いた/仮, ひとこと, 置き場所]
@@ -337,13 +339,17 @@ const CTL=[
  ["down","頭金（物件代に入れる自己資金）",0,2000,50,"万円","u","諸費用（約400万円）は別に自己資金","main"],
  ["renoLoan","2階の工事費",0,1,1,"","u","","main",["自己資金で払う","借入に含める"]],
  ["@","家賃","main"],
- ["rentRoom","2階の家賃（1室あたり）",4,8,0.1,"万円","k","近くの30㎡前後は5万円台。フルリノベで5.5万、ペット可なら6.5万も","main"],
+ ["use2","2階の使い方",0,1,1,"","k","住宅は部屋ごとにキッチン・浴室を新設。事務所ワンフロアは今あるトイレ・給湯を使う","main",["住宅に分けて貸す","事務所ワンフロア"]],
+ ["rentRoom","2階の家賃（1室あたり）",4,8,0.1,"万円","k","近くの30㎡前後は5万円台。フルリノベで5.5万、ペット可なら6.5万も","main",null,"r"],
+ ["officeRent","2階の家賃（事務所ワンフロア）",8,20,0.5,"万円","k","約110㎡＝33坪。坪4,000円で13万円。駐車場なしの郊外なら11〜17万円が目安","main",null,"o"],
+ ["officeReno","事務所にする工事費",0,800,10,"万円","k","トイレ・給湯は残っている前提。内装・照明・エアコン・電気","main",null,"o"],
  ["vac2","2階の空室率",0,30,1,"%","k","10%＝1年のうち約1.2か月空く","main"],
  ["extra","家賃以外から足すお金（月）",0,40,1,"万円","u","初期値7万＝いまの住まいを手放すと浮く住居費の目安","main"],
- ["@","2階の部屋","more"],
- ["rooms","2階の部屋数",3,4,1,"室","u","","more",["3室","4室"]],
- ["perRoom","2階の工事費（1室あたり）",200,600,10,"万円","k","キッチン・浴室・トイレ・排水・内装","more"],
- ["renoMonths","工事の期間（2階の家賃なし）",0,12,1,"か月","k","","more"],
+ ["@","2階","more"],
+ ["rooms","2階の部屋数",3,4,1,"室","u","","more",["3室","4室"],"r"],
+ ["perRoom","2階の工事費（1室あたり）",200,600,10,"万円","k","キッチン・浴室・トイレ・排水・内装","more",null,"r"],
+ ["renoMonths","工事の期間（2階の家賃なし）",0,12,1,"か月","k","","more",null,"r"],
+ ["officeMonths","事務所の工事期間（2階の家賃なし）",0,6,1,"か月","k","","more",null,"o"],
  ["dec2","2階の家賃の下がり方",0,3,0.5,"%/年","k","古くなるほど下がる。最初の7割で止まる想定","more"],
  ["@","1階（テナント）","more"],
  ["rent1","1階の家賃",15,30,0.5,"万円","u","入居中のテナント","more"],
@@ -359,7 +365,7 @@ const CTL=[
  ["bigY","その1回目（購入から何年目）",1,15,1,"年目","u","これまで大規模修繕なし。雨漏り跡・外壁のひびあり","more"],
  ["bigEvery","そのあとの間隔",10,20,1,"年ごと","k","","more"],
  ["eqCost","給排水管・電気・受水槽の更新",0,1000,50,"万円","k","古い給水管・排水管・電気の更新。直結給水にすればポンプの更新は不要","more"],
- ["direct","直結給水への切替工事（1年目）",0,500,10,"万円","k","1階の給水ポンプをなくす工事。道路側の引込管を太くする工事が要ることも。地元の水道局に要確認","more"],
+ ["direct","直結給水への切替工事（1年目）",0,500,10,"万円","k","1階の給水ポンプをなくす工事。道路側の引込管を太くする工事が要ることも。地元の水道局に要確認","more",null,"r"],
  ["eqY","その時期（購入から何年目）",1,20,1,"年目","k","","more"],
  ["@","金利の上昇と繰上返済","more"],
  ["rateUp","6年目からの金利の上がり幅",0,2,0.25,"%","k","変動金利の場合の備え","more"],
@@ -371,20 +377,20 @@ let P={...STD}, scen="std";
 /* ===== 計算（画面とは切り離した部分） ===== */
 const pmt=(r,n,pv)=>n<=0?pv:(r===0?pv/n:pv*r/(1-Math.pow(1+r,-n)));
 const nper=(r,pay,pv)=>r===0?pv/pay:-Math.log(1-r*pv/pay)/Math.log(1+r);
-function renoCost(p){return p.rooms*p.perRoom}
+function renoCost(p){return p.use2?p.officeReno:p.rooms*p.perRoom}
 function loanOf(p){return Math.max(0,p.price-p.down+(p.renoLoan?renoCost(p):0))}
 function monthFlow(p,m){ // m=1.. 購入からの月
  const y=Math.ceil(m/12);
  const f1=Math.max(.7,Math.pow(1-p.dec1/100,y-1)), f2=Math.max(.7,Math.pow(1-p.dec2/100,y-1));
  const in1=p.rent1*(1-p.vac1/100)*f1;
- const in2=m<=p.renoMonths?0:p.rooms*p.rentRoom*(1-p.vac2/100)*f2;
+ const in2=m<=(p.use2?p.officeMonths:p.renoMonths)?0:(p.use2?p.officeRent:p.rooms*p.rentRoom)*(1-p.vac2/100)*f2;
  const exp=(p.tax+p.ins+p.small)/12+p.util+in2*p.mgmt/100;
  return {in1,in2,exp};
 }
 function eventsIn(p,y){const e=[];
  if(y>=p.bigY&&(y-p.bigY)%p.bigEvery===0)e.push(["外壁・屋上防水",p.bigCost]);
  if(y===p.eqY&&p.eqCost>0)e.push(["給排水管・電気・受水槽",p.eqCost]);
- if(y===1&&p.direct>0)e.push(["直結給水への切替工事",p.direct]);
+ if(y===1&&p.direct>0&&!p.use2)e.push(["直結給水への切替工事",p.direct]);
  return e}
 function sim(p,o={}){
  const prepay=o.prepay??!!p.prepay, extra=o.extra??p.extra;
@@ -508,7 +514,7 @@ function chSens(){
   s+=`<rect x="${x}" y="${y(yy)}" width="${bwd}" height="${y(0)-y(yy)}" rx="4" fill="var(--s1)" opacity="${cur?1:.4}"/>`;
   s+=`<text x="${x+bwd/2}" y="${y(yy)-6}" text-anchor="middle" font-size="${w<420?9.5:11}" font-weight="${cur?700:500}" fill="${cur?"var(--ink)":"var(--ink-2)"}">${yr1(r.m)}</text>`;
   s+=`<text x="${x+bwd/2}" y="${h-12}" text-anchor="middle" font-size="10.5" fill="var(--ink-3)">${r.e}万</text>`;
-  s+=`<rect class="hit" x="${pad.l+i*bw}" y="${pad.t}" width="${bw}" height="${h-pad.t-pad.b}" data-tip="<b>毎月 ${r.e}万円 足すと</b><br>購入から ${ym(r.m)}で完済<br>（2階の完成からは ${ym(r.m-P.renoMonths)}）"/>`});
+  s+=`<rect class="hit" x="${pad.l+i*bw}" y="${pad.t}" width="${bw}" height="${h-pad.t-pad.b}" data-tip="<b>毎月 ${r.e}万円 足すと</b><br>購入から ${ym(r.m)}で完済<br>（2階の完成からは ${ym(r.m-(P.use2?P.officeMonths:P.renoMonths))}）"/>`});
  s+=`<text x="${w-pad.r}" y="${h}" text-anchor="end" font-size="10" fill="var(--ink-3)">毎月足すお金</text>`;
  el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" height="${h}" role="img" aria-label="毎月足すお金と完済までの年数">${s}</svg>`;
  return res;
@@ -544,8 +550,8 @@ function render(){
  const base=sim(P,{prepay:false}),pre=sim(P,{prepay:!!P.prepay}),t=typical(P),T=P.term;
  const sens=chSens();
  const isStd=sameAs(STD)&&scen==="std";
- const who=isStd?"標準ケースでは":(scen==="hard"&&sameAs({...STD,...SCEN.hard})?"厳しめの想定では":(scen==="easy"&&sameAs({...STD,...SCEN.easy})?"甘めの想定では":(scen==="pet"&&sameAs({...STD,...SCEN.pet})?"ペット可にした場合":"いまの条件では")));
- const fromDone=pre.payoff-P.renoMonths;
+ const who=isStd?"標準ケースでは":(scen==="hard"&&sameAs({...STD,...SCEN.hard})?"厳しめの想定では":(scen==="easy"&&sameAs({...STD,...SCEN.easy})?"甘めの想定では":(scen==="pet"&&sameAs({...STD,...SCEN.pet})?"ペット可にした場合":(scen==="office"&&sameAs({...STD,...SCEN.office})?"2階を事務所にした場合":"いまの条件では"))));
+ const fromDone=pre.payoff-(P.use2?P.officeMonths:P.renoMonths);
  $("#h1").innerHTML=`${who}、2階の完成から<span class="big">約${ym(fromDone)}</span>で完済${pre.payoff<T*12-1?"":`（借入期間${T}年どおり）`}`;
  const own=P.misc+P.down+(P.renoLoan?0:renoCost(P));
  $("#lede").innerHTML=`購入からは${ym(pre.payoff)}（${NOW+Math.floor(pre.payoff/12)}年ごろ・築${Math.round(AGE0+pre.payoff/12)}年）。借入 ${f0(base.loan)}万円・${P.rate}%・${T}年、自己資金 ${f0(own)}万円の場合。`;
@@ -588,6 +594,9 @@ function render(){
  $("#t-rep").innerHTML=`<tr><th>時期</th><th class="l">内容</th><th>費用</th></tr>`+ev.map(e=>`<tr><td>${e[0]}年目（${NOW+e[0]}年・築${AGE0+e[0]}）</td><td class="l">${e[1]}</td><td class="num">${f0(e[2])}</td></tr>`).join("")+
   `<tr><td>毎年</td><td class="l">小さな修繕・入退去の費用</td><td class="num">${f0(P.small)}／年</td></tr><tr><td><b>${T}年の合計</b></td><td class="l"></td><td class="num"><b>${f0(t.evTotal+P.small*T)}</b></td></tr>`;
  $("#m6").innerHTML=`大きな修繕は${T}年で<b>${ev.length}回・計${f0(t.evTotal)}万円</b>（仮）。1回目は<b>${P.bigY}年目</b>に置いていますが、前回いつ直したかがわかれば差しかえます。`;
+ const UC=[0,1].map(u=>{const q={...P,use2:u},b=sim(q,{prepay:!!q.prepay}),tt=typical(q);return {u,loan:b.loan,reno:renoCost(q),in2:tt.in2,pay:tt.pay,net:tt.net,po:b.payoff}});
+ const hl=c=>c.u===P.use2?' style="background:var(--brand-s);font-weight:700"':"";
+ $("#t-use").innerHTML=`<tr><th>項目</th><th>住宅${P.rooms}室</th><th>事務所ワンフロア</th></tr>`+[["2階の工事費",c=>f0(c.reno)],["借入額",c=>f0(c.loan)],["毎月の返済",c=>f1(c.pay)],["2階の家賃（空室を引いた後）",c=>f1(c.in2)],["毎月の手残り",c=>`<span class="${c.net<0?"neg":""}">${f1(c.net)}</span>`],["完済まで（購入から）",c=>ym(c.po)]].map(([l,f])=>`<tr><td>${l}</td>${UC.map(c=>`<td class="num"${hl(c)}>${f(c)}</td>`).join("")}</tr>`).join("");
  chBal(base,pre);chWF(t);chCF(pre);chAge(pre);
 }
 
@@ -598,15 +607,15 @@ function buildCtl(){
   $("#ctl-"+place).innerHTML=CTL.filter(c=>(c[0]==="@"?c[2]:c[8])===place).map(c=>{
    if(c[0]==="@")return `<div class="grp">${c[1]}</div>`;
    const tag=`<span class="who ${c[6]}">${c[6]==="u"?"聞いた":"仮"}</span>`;
-   if(c[9])return `<div class="sl"><label>${c[1]}${tag}</label><div class="tg" data-k="${c[0]}">${c[9].map((o,i)=>`<button type="button" data-v="${i?c[3]:c[2]}">${o}</button>`).join("")}</div>${c[7]?`<small>${c[7]}</small>`:""}</div>`;
-   return `<div class="sl"><label for="r-${c[0]}"><span>${c[1]}${tag}</span><b id="v-${c[0]}" class="num"></b></label><input type="range" id="r-${c[0]}" min="${c[2]}" max="${c[3]}" step="${c[4]}" data-k="${c[0]}">${c[7]?`<small>${c[7]}</small>`:""}</div>`;
+   if(c[9])return `<div class="sl"${c[10]?` data-use="${c[10]}"`:""}><label>${c[1]}${tag}</label><div class="tg" data-k="${c[0]}">${c[9].map((o,i)=>`<button type="button" data-v="${i?c[3]:c[2]}">${o}</button>`).join("")}</div>${c[7]?`<small>${c[7]}</small>`:""}</div>`;
+   return `<div class="sl"${c[10]?` data-use="${c[10]}"`:""}><label for="r-${c[0]}"><span>${c[1]}${tag}</span><b id="v-${c[0]}" class="num"></b></label><input type="range" id="r-${c[0]}" min="${c[2]}" max="${c[3]}" step="${c[4]}" data-k="${c[0]}">${c[7]?`<small>${c[7]}</small>`:""}</div>`;
   }).join("")});
  document.querySelectorAll("input[type=range]").forEach(r=>r.addEventListener("input",()=>{P[r.dataset.k]=+r.value;setScen("custom");sync();redraw()}));
  document.querySelectorAll(".tg button").forEach(b=>b.addEventListener("click",()=>{P[b.parentElement.dataset.k]=+b.dataset.v;setScen("custom");sync();redraw()}));
  document.querySelectorAll(".scen button[data-s]").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.s==="custom")return;P={...STD,...SCEN[b.dataset.s]};setScen(b.dataset.s);sync();redraw()}));
 }
 function setScen(s){scen=s;document.querySelectorAll(".scen button").forEach(b=>b.classList.toggle("on",b.dataset.s===s))}
-function sync(){CTL.forEach(c=>{if(c[0]==="@")return;const v=P[c[0]];
+function sync(){document.querySelectorAll(".sl[data-use]").forEach(d=>d.hidden=(d.dataset.use==="o")!==!!P.use2);CTL.forEach(c=>{if(c[0]==="@")return;const v=P[c[0]];
  if(c[9]){document.querySelectorAll(`.tg[data-k="${c[0]}"] button`).forEach(b=>b.classList.toggle("on",+b.dataset.v===v));return}
  $("#r-"+c[0]).value=v;$("#v-"+c[0]).textContent=fmtV(c,v)})}
 function redraw(){document.querySelectorAll(".anim").forEach(a=>{a.dataset.shown=1;a.classList.remove("play")});render()}
