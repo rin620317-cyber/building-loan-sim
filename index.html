@@ -31,6 +31,7 @@
 --good:#2fc72f;--bad:#ff6b6b;--warn:#fab219;--warn-s:rgba(250,178,25,.13);--bad-s:rgba(255,107,107,.12);--good-s:rgba(47,199,47,.12);
 --grid:rgba(160,170,255,.08);--shadow:0 12px 30px -16px rgba(0,0,0,.75)}
 *{box-sizing:border-box}[hidden]{display:none!important}
+#t-use th,#t-use td{white-space:normal;padding:7px 6px}#t-use td:first-child{min-width:7.5em}#t-use td:not(:first-child),#t-use th:not(:first-child){width:30%}
 html{scroll-behavior:smooth;scroll-padding-top:96px}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,"Noto Sans JP","Hiragino Sans","Yu Gothic UI",sans-serif;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;transition:background-color .35s,color .35s}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
@@ -596,7 +597,7 @@ function render(){
  $("#m6").innerHTML=`大きな修繕は${T}年で<b>${ev.length}回・計${f0(t.evTotal)}万円</b>（仮）。1回目は<b>${P.bigY}年目</b>に置いていますが、前回いつ直したかがわかれば差しかえます。`;
  const UC=[0,1].map(u=>{const q={...P,use2:u},b=sim(q,{prepay:!!q.prepay}),tt=typical(q);return {u,loan:b.loan,reno:renoCost(q),in2:tt.in2,pay:tt.pay,net:tt.net,po:b.payoff}});
  const hl=c=>c.u===P.use2?' style="background:var(--brand-s);font-weight:700"':"";
- $("#t-use").innerHTML=`<tr><th>項目</th><th>住宅${P.rooms}室</th><th>事務所ワンフロア</th></tr>`+[["2階の工事費",c=>f0(c.reno)],["借入額",c=>f0(c.loan)],["毎月の返済",c=>f1(c.pay)],["2階の家賃（空室を引いた後）",c=>f1(c.in2)],["毎月の手残り",c=>`<span class="${c.net<0?"neg":""}">${f1(c.net)}</span>`],["完済まで（購入から）",c=>ym(c.po)]].map(([l,f])=>`<tr><td>${l}</td>${UC.map(c=>`<td class="num"${hl(c)}>${f(c)}</td>`).join("")}</tr>`).join("");
+ $("#t-use").innerHTML=`<tr><th>項目</th><th>住宅${P.rooms}室</th><th>事務所<br>ワンフロア</th></tr>`+[["2階の工事費",c=>f0(c.reno)],["借入額",c=>f0(c.loan)],["毎月の返済",c=>f1(c.pay)],["2階の家賃（空室を引いた後）",c=>f1(c.in2)],["毎月の手残り",c=>`<span class="${c.net<0?"neg":""}">${f1(c.net)}</span>`],["完済まで（購入から）",c=>ym(c.po)]].map(([l,f])=>`<tr><td>${l}</td>${UC.map(c=>`<td class="num"${hl(c)}>${f(c)}</td>`).join("")}</tr>`).join("");
  chBal(base,pre);chWF(t);chCF(pre);chAge(pre);
 }
 
